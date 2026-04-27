@@ -47,6 +47,8 @@ dependencies:
   cached_network_image: ^3.3.0
   material_symbols_icons: ^4.2719.1
   flutter_launcher_icons: ^0.14.4
+  url_launcher: ^6.3.0
+  web: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -108,4 +110,3 @@ flutter_launcher_icons:
   web:
     generate: true
   image_path: 'assets/icon.png'
-

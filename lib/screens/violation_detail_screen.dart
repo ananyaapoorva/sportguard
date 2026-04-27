@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/gestures.dart';
+import 'dart:js' as js;
 
 class ViolationDetailScreen extends StatelessWidget {
   final String violationId;
@@ -10,6 +12,10 @@ class ViolationDetailScreen extends StatelessWidget {
     required this.violationId,
     required this.data,
   });
+
+  void _launchUrl(String url) {
+    js.context.callMethod('openUrl', [url]);
+  }
 
   Future<void> _resolveViolation(BuildContext context) async {
     try {
@@ -64,17 +70,14 @@ class ViolationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Safe double parsing
     final similarityScore =
         (data['similarityScore'] as num?)?.toDouble() ?? 0.0;
     final score = (similarityScore * 100).round();
 
-    // Safe timestamp parsing
     final timestamp = data['detectedAt'] is Timestamp
         ? (data['detectedAt'] as Timestamp).toDate().toString().split('.')[0]
         : 'Unknown time';
 
-    // Safe match URL
     final matchUrl = data['matchUrl'] as String? ?? '';
 
     return Scaffold(
@@ -139,7 +142,42 @@ class ViolationDetailScreen extends StatelessWidget {
               textColor: _severityColor(data['severity'], similarityScore),
             ),
             _buildDetailRow('Detected At', timestamp),
-            if (matchUrl.isNotEmpty) _buildDetailRow('Match URL', matchUrl),
+
+            // ✅ Match URL as RichText hyperlink
+            if (matchUrl.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Match URL',
+                      style: TextStyle(
+                        color: Color(0xFF35858E),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    RichText(
+                      text: TextSpan(
+                        text: matchUrl,
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontSize: 16,
+                          height: 1.5,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.blue,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () => _launchUrl(matchUrl),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(color: Colors.black12),
+                  ],
+                ),
+              ),
 
             const SizedBox(height: 30),
             SizedBox(
